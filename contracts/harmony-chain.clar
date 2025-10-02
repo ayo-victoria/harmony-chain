@@ -33,3 +33,32 @@
   uint
   principal
 )
+
+;; PRIVATE FUNCTIONS
+
+(define-private (authorized?
+    (rights-id uint)
+    (caller principal)
+  )
+  (is-eq caller (unwrap! (map-get? rights-owners rights-id) false))
+)
+
+(define-private (valid-metadata? (data (string-ascii 256)))
+  (let ((length (len data)))
+    (and (>= length u1) (<= length max-metadata-length))
+  )
+)
+
+(define-private (valid-address? (addr principal))
+  true
+)
+
+(define-private (mint-rights (data (string-ascii 256)))
+  (let ((new-id (+ (var-get rights-id-tracker) u1)))
+    (try! (nft-mint? harmony-rights new-id tx-sender))
+    (map-set rights-metadata new-id data)
+    (map-set rights-owners new-id tx-sender)
+    (var-set rights-id-tracker new-id)
+    (ok new-id)
+  )
+)
