@@ -62,3 +62,26 @@
     (ok new-id)
   )
 )
+
+;; PUBLIC FUNCTIONS
+
+(define-public (register-rights (data (string-ascii 256)))
+  (begin
+    (asserts! (is-eq tx-sender contract-admin) err-unauthorized)
+    (asserts! (valid-metadata? data) err-invalid-input)
+    (mint-rights data)
+  )
+)
+
+(define-public (transfer-rights
+    (rights-id uint)
+    (recipient principal)
+  )
+  (begin
+    (asserts! (authorized? rights-id tx-sender) err-forbidden)
+    (asserts! (valid-address? recipient) err-invalid-address)
+    (try! (nft-transfer? harmony-rights rights-id tx-sender recipient))
+    (map-set rights-owners rights-id recipient)
+    (ok true)
+  )
+)
